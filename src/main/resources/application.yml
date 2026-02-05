@@ -1,0 +1,7 @@
+spring.application.name: Note Taking
+
+app:
+  jwt:
+    secret: abc
+    expiration: 3600000
+    refresh-expiration: 86400000

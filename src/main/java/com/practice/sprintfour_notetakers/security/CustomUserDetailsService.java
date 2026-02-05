@@ -2,6 +2,7 @@ package com.practice.sprintfour_notetakers.security;
 
 import com.practice.sprintfour_notetakers.entity.User;
 import com.practice.sprintfour_notetakers.repository.UserRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email)
+    public UserDetails loadUserByUsername(@NonNull String email)
             throws UsernameNotFoundException{
 
         User user = userRepository.findByEmail(email)

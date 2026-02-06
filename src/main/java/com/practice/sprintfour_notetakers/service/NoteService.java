@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class NoteService {
@@ -38,7 +39,16 @@ public class NoteService {
         return mapToNoteResponse(note);
     }
 
+    public List<NoteResponse> getUserNotes(String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        List<Note> notes = noteRepository.findByUserId(user.getId());
+
+        return notes.stream()
+                .map(this::mapToNoteResponse)
+                .toList();
+    }
 
     private NoteResponse mapToNoteResponse(Note note){
         NoteResponse noteResponse = new NoteResponse();

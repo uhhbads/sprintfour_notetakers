@@ -1,6 +1,7 @@
 package com.practice.sprintfour_notetakers.service;
 
 import com.practice.sprintfour_notetakers.dto.auth.AuthResponse;
+import com.practice.sprintfour_notetakers.dto.auth.LoginRequest;
 import com.practice.sprintfour_notetakers.dto.auth.RegisterRequest;
 import com.practice.sprintfour_notetakers.dto.auth.UserInfo;
 import com.practice.sprintfour_notetakers.entity.RefreshToken;
@@ -9,12 +10,19 @@ import com.practice.sprintfour_notetakers.entity.User;
 import com.practice.sprintfour_notetakers.repository.RefreshTokenRepository;
 import com.practice.sprintfour_notetakers.repository.UserRepository;
 import com.practice.sprintfour_notetakers.security.JwtUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -54,6 +62,38 @@ public class AuthService {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(refreshTokenValue);
         refreshToken.setUser(user);
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+
+        refreshTokenRepository.save(refreshToken);
+
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshTokenValue);
+        response.setExpiresIn(jwtUtil.getAccessTokenExpirationSeconds());
+        response.setUser(mapToUserInfo(user));
+
+        return response;
+    }
+
+    public AuthResponse login(LoginRequest request){
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        User user = userRepository.findByEmail(request.getEmail())
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String accessToken = jwtUtil.generateAccessToken(user.getEmail(), String.valueOf(user.getRole()));
+        String refreshTokenValue = jwtUtil.generateRefreshToken(user.getEmail());
+
+        refreshTokenRepository.deleteByUser(user);
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setToken(refreshTokenValue);
         refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
 
         refreshTokenRepository.save(refreshToken);

@@ -32,10 +32,13 @@ public class NoteService {
         note.setCreatedAt(LocalDateTime.now());
         note.setUpdatedAt(LocalDateTime.now());
 
+        user.addNote(note);
         noteRepository.save(note);
 
         return mapToNoteResponse(note);
     }
+
+
 
     private NoteResponse mapToNoteResponse(Note note){
         NoteResponse noteResponse = new NoteResponse();

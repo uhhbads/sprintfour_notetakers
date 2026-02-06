@@ -32,4 +32,14 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Note> notes = new ArrayList<>();
+
+    public void addNote(Note note){
+        notes.add(note);
+        note.setUser(this);
+    }
+
+    public void remoteNote(Note note){
+        notes.remove(note);
+        note.setUser(null);
+    }
 }

@@ -7,22 +7,21 @@ import com.practice.sprintfour_notetakers.dto.auth.UserInfo;
 import com.practice.sprintfour_notetakers.entity.RefreshToken;
 import com.practice.sprintfour_notetakers.entity.Role;
 import com.practice.sprintfour_notetakers.entity.User;
+import com.practice.sprintfour_notetakers.exception.EmailAlreadyExistsException;
+import com.practice.sprintfour_notetakers.exception.InvalidCredentialsException;
+import com.practice.sprintfour_notetakers.exception.InvalidRefreshTokenException;
 import com.practice.sprintfour_notetakers.repository.RefreshTokenRepository;
 import com.practice.sprintfour_notetakers.repository.UserRepository;
 import com.practice.sprintfour_notetakers.security.JwtUtil;
-import org.jspecify.annotations.Nullable;
+import jakarta.validation.constraints.Email;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 @Service
 public class AuthService {
@@ -31,7 +30,6 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
 
     public AuthService(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
@@ -44,7 +42,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request){
         if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Email already registered");
+            throw new EmailAlreadyExistsException("Email already registered");
         }
 
         User user = new User();
@@ -84,7 +82,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                        .orElseThrow(() -> new InvalidCredentialsException("User not found"));
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail(), String.valueOf(user.getRole()));
         String refreshTokenValue = jwtUtil.generateRefreshToken(user.getEmail());
@@ -113,7 +111,7 @@ public class AuthService {
 
         if(jwtUtil.isTokenExpired(refreshToken)){
             refreshTokenRepository.delete(foundRefreshToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new InvalidRefreshTokenException("Refresh token expired");
         }
 
         User user = foundRefreshToken.getUser();

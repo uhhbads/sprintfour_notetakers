@@ -107,6 +107,27 @@ public class AuthService {
         return response;
     }
 
+    public AuthResponse refreshToken(String refreshToken){
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        if(jwtUtil.isTokenExpired(refreshToken)){
+            refreshTokenRepository.delete(foundRefreshToken);
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        User user = foundRefreshToken.getUser();
+        String newAccessToken = jwtUtil.generateAccessToken(user.getEmail(), String.valueOf(user.getRole()));
+
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(newAccessToken);
+        response.setRefreshToken(refreshToken);
+        response.setExpiresIn(jwtUtil.getAccessTokenExpirationSeconds());
+        response.setUser(mapToUserInfo(user));
+
+        return response;
+    }
+
     private UserInfo mapToUserInfo(User user) {
         UserInfo info = new UserInfo();
         info.setId(user.getId());

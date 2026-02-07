@@ -2,6 +2,7 @@ package com.practice.sprintfour_notetakers.service;
 
 import com.practice.sprintfour_notetakers.dto.note.NoteCreateRequest;
 import com.practice.sprintfour_notetakers.dto.note.NoteResponse;
+import com.practice.sprintfour_notetakers.dto.note.NoteUpdateRequest;
 import com.practice.sprintfour_notetakers.entity.Note;
 import com.practice.sprintfour_notetakers.entity.User;
 import com.practice.sprintfour_notetakers.repository.NoteRepository;
@@ -48,6 +49,45 @@ public class NoteService {
         return notes.stream()
                 .map(this::mapToNoteResponse)
                 .toList();
+    }
+
+    public NoteResponse getNoteById(Long noteId, String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Note note = noteRepository.findByIdAndUserId(noteId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+
+        return mapToNoteResponse(note);
+    }
+
+    public NoteResponse updateNote(Long noteId, NoteUpdateRequest request, String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Note note = noteRepository.findByIdAndUserId(noteId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+
+        note.setTitle(request.getTitle());
+        note.setContent(request.getContent());
+        note.setUpdatedAt(LocalDateTime.now());
+
+        noteRepository.save(note);
+
+        return mapToNoteResponse(note);
+    }
+
+    public NoteResponse deleteNote(Long noteId, String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Note note = noteRepository.findByIdAndUserId(noteId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+
+        user.remoteNote(note);
+        noteRepository.delete(note);
+
+        return mapToNoteResponse(note);
     }
 
     private NoteResponse mapToNoteResponse(Note note){

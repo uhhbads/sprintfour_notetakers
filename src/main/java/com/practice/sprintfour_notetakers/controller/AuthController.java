@@ -20,6 +20,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> postRegister(@RequestBody RegisterRequest request){
+        System.out.println("Register endpoint hit with email: " + request.getEmail());
         AuthResponse authResponse = authService.register(request);
 
         return ResponseEntity

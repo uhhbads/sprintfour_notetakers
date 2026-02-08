@@ -4,12 +4,12 @@ import com.practice.sprintfour_notetakers.dto.note.NoteCreateRequest;
 import com.practice.sprintfour_notetakers.dto.note.NoteResponse;
 import com.practice.sprintfour_notetakers.dto.note.NoteUpdateRequest;
 import com.practice.sprintfour_notetakers.service.NoteService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -21,16 +21,11 @@ public class NoteController {
         this.noteService = noteService;
     }
 
-    private String getCurrentUserEmail(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        return auth.getName();
-    }
-
     @PostMapping
     public ResponseEntity<NoteResponse> postNote(
-            @RequestBody NoteCreateRequest request){
-        NoteResponse note = noteService.createNote(request, getCurrentUserEmail());
+            @Valid @RequestBody NoteCreateRequest request,
+            Principal principal){
+        NoteResponse note = noteService.createNote(request, principal.getName());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -38,16 +33,17 @@ public class NoteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<NoteResponse>> getUserNotes(){
-        List<NoteResponse> notes = noteService.getUserNotes(getCurrentUserEmail());
+    public ResponseEntity<List<NoteResponse>> getUserNotes(Principal principal){
+        List<NoteResponse> notes = noteService.getUserNotes(principal.getName());
 
         return ResponseEntity.ok(notes);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<NoteResponse> getSpecificNote(
-            @PathVariable Long id){
-        NoteResponse note = noteService.getNoteById(id, getCurrentUserEmail());
+            @PathVariable Long id,
+            Principal principal){
+        NoteResponse note = noteService.getNoteById(id, principal.getName());
 
         return ResponseEntity.ok(note);
     }
@@ -55,16 +51,18 @@ public class NoteController {
     @PutMapping("/{id}")
     public ResponseEntity<NoteResponse> putNote(
             @PathVariable Long id,
-            @RequestBody NoteUpdateRequest request){
-        NoteResponse note = noteService.updateNote(id, request, getCurrentUserEmail());
+            @Valid @RequestBody NoteUpdateRequest request,
+            Principal principal){
+        NoteResponse note = noteService.updateNote(id, request, principal.getName());
 
         return ResponseEntity.ok(note);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<NoteResponse> deleteNote(
-            @RequestParam Long id){
-        NoteResponse note = noteService.deleteNote(id, getCurrentUserEmail());
+            @PathVariable Long id,
+            Principal principal){
+        NoteResponse note = noteService.deleteNote(id, principal.getName());
 
         return ResponseEntity.ok(note);
     }

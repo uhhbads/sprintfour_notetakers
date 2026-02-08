@@ -9,6 +9,7 @@ import com.practice.sprintfour_notetakers.repository.NoteRepository;
 import com.practice.sprintfour_notetakers.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,6 +78,7 @@ public class NoteService {
         return mapToNoteResponse(note);
     }
 
+    @Transactional
     public NoteResponse deleteNote(Long noteId, String userEmail){
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -92,6 +94,7 @@ public class NoteService {
 
     private NoteResponse mapToNoteResponse(Note note){
         NoteResponse noteResponse = new NoteResponse();
+        noteResponse.setId(note.getId());
         noteResponse.setTitle(note.getTitle());
         noteResponse.setContent(note.getContent());
         noteResponse.setCreatedAt(note.getCreatedAt());

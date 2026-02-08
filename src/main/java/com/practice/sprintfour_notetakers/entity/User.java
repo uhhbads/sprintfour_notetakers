@@ -3,7 +3,6 @@ package com.practice.sprintfour_notetakers.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,7 +29,10 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Note> notes = new ArrayList<>();
 
     public void addNote(Note note){

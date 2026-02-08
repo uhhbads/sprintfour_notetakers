@@ -38,7 +38,7 @@ public class User {
         note.setUser(this);
     }
 
-    public void remoteNote(Note note){
+    public void removeNote(Note note){
         notes.remove(note);
         note.setUser(null);
     }

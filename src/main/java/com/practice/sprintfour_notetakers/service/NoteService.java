@@ -84,7 +84,7 @@ public class NoteService {
         Note note = noteRepository.findByIdAndUserId(noteId, user.getId())
                 .orElseThrow(() -> new RuntimeException("Note not found"));
 
-        user.remoteNote(note);
+        user.removeNote(note);
         noteRepository.delete(note);
 
         return mapToNoteResponse(note);

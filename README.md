@@ -1,5 +1,5 @@
 # SPRINT FOUR - Secure Note-Taking API
-## Project Duration: February 6, 2026 – February 10, 2026
+## Project Duration: February 5, 2026 – February 10, 2026
 ### Overview
 The Secure Note-Taking API is a high-security backend service focused on Identity and Access Management (IAM). This sprint moves beyond data structures and REST design to implement a robust security perimeter using Spring Security and JSON Web Tokens (JWT).
 

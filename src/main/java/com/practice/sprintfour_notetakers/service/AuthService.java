@@ -79,12 +79,16 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request){
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
 
         User user = userRepository.findByEmail(request.getEmail())
                         .orElseThrow(() -> new InvalidCredentialsException("User not found"));
@@ -92,10 +96,12 @@ public class AuthService {
         String accessToken = jwtUtil.generateAccessToken(user.getEmail(), String.valueOf(user.getRole()));
         String refreshTokenValue = jwtUtil.generateRefreshToken(user.getEmail());
 
-        refreshTokenRepository.deleteByUser(user);
-
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user);
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+                .orElseGet(() -> {
+                    RefreshToken newToken = new RefreshToken();
+                    newToken.setUser(user);
+                    return newToken;
+                });
         refreshToken.setToken(refreshTokenValue);
         refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
 

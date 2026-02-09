@@ -5,6 +5,7 @@ import com.practice.sprintfour_notetakers.dto.note.NoteResponse;
 import com.practice.sprintfour_notetakers.dto.note.NoteUpdateRequest;
 import com.practice.sprintfour_notetakers.entity.Note;
 import com.practice.sprintfour_notetakers.entity.User;
+import com.practice.sprintfour_notetakers.exception.NoteNotFoundException;
 import com.practice.sprintfour_notetakers.repository.NoteRepository;
 import com.practice.sprintfour_notetakers.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,11 +54,13 @@ public class NoteService {
     }
 
     public NoteResponse getNoteById(Long noteId, String userEmail){
+
+
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         Note note = noteRepository.findByIdAndUserId(noteId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Note not found"));
+                .orElseThrow(() -> new NoteNotFoundException("Note not found"));
 
         return mapToNoteResponse(note);
     }
